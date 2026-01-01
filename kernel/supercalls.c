@@ -410,7 +410,7 @@ static int do_manage_mark(void __user *arg)
 
     switch (cmd.operation) {
     case KSU_MARK_GET: {
-#ifdef KSU_TP_HOOK
+#if defined(KSU_TP_HOOK)
         // Get task mark status
         ret = ksu_get_task_mark(cmd.pid);
         if (ret < 0) {

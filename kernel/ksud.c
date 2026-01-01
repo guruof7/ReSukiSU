@@ -410,16 +410,9 @@ append_ksu_rc:
     return ret;
 }
 
-static int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
-                               size_t *count_ptr, loff_t **pos)
+int ksu_handle_initrc(struct file **file_ptr)
 {
-#if defined(CONFIG_KSU_SUSFS) || defined(CONFIG_KSU_MANUAL_HOOK)
-    if (!ksu_vfs_read_hook) {
-        return 0;
-    }
-#endif
     struct file *file;
-    size_t count;
 
     if (strcmp(current->comm, "init")) {
         // we are only interest in `init` process
@@ -463,10 +456,9 @@ static int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 
     // now we can sure that the init process is reading
     // `/init.rc` or `/system/etc/init/atrace.rc`
-    count = *count_ptr;
 
-    pr_info("vfs_read: %s, comm: %s, count: %zu, rc_count: %zu\n", dpath,
-            current->comm, count, ksu_rc_len);
+    pr_info("vfs_read: %s, comm: %s, rc_count: %zu\n", dpath, current->comm,
+            ksu_rc_len);
 
     // Now we need to proxy the read and modify the result!
     // But, we can not modify the file_operations directly, because it's in read-only memory.
@@ -482,7 +474,20 @@ static int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
     }
     // replace the file_operations
     file->f_op = &fops_proxy;
+    return 0;
+}
+static int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
+                               size_t *count_ptr, loff_t **pos)
+{
+#if defined(CONFIG_KSU_SUSFS) ||                                               \
+    (defined(CONFIG_KSU_MANUAL_HOOK) &&                                        \
+     !defined(CONFIG_KSU_MANUAL_HOOK_AUTO_INITRC_HOOK))
+    if (!ksu_vfs_read_hook) {
+        return 0;
+    }
 
+    ksu_handle_initrc(file_ptr);
+#endif
     return 0;
 }
 

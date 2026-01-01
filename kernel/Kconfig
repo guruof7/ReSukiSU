@@ -52,12 +52,24 @@ config KSU_MANUAL_HOOK_AUTO_SETUID_HOOK
 	depends on KSU_MANUAL_HOOK
 	default y
 	help
-	  THIS OPTION IS CAN NOT BE USED IN KERNEL_VERSION >= 6.8 DUE TO LSM CHANGES
+	  THIS OPTION CAN NOT BE USED IN KERNEL_VERSION >= 6.8 DUE TO LSM CHANGES
 	  YOU MUST MANUALLY HOOK SETRESUID
 
 	  If turn off this option, you need checkout to kernel/sys.c 
-	  in SYSCALL_DEFINE3(setresuid, uid_t, ruid, uid_t, euid, uid_t, suid)
+	  in __sys_setresuid(uid_t ruid, uid_t euid, uid_t suid)
 	  add a ksu_handle_setresuid calls in there
+
+config KSU_MANUAL_HOOK_AUTO_INITRC_HOOK
+    bool "Automatically hook ksu init rc by lsm"
+	depends on KSU_MANUAL_HOOK
+	default y
+	help
+	  THIS OPTION CAN NOT BE USED IN KERNEL_VERSION >= 6.8 DUE TO LSM CHANGES
+	  YOU MUST MANUALLY HOOK SYS_READ
+
+	  If turn off this option, you need checkout to fs/read_write.c
+	  in SYSCALL_DEFINE3(read, unsigned int, fd, char __user *, buf, size_t, count)
+	  add a ksu_handle_sys_read calls in there
 
 menu "KernelSU - SUSFS"
 config KSU_SUSFS
