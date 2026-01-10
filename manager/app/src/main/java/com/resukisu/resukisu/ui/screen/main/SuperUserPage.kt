@@ -483,9 +483,9 @@ private fun SuperUserContent(
                 item {
                     LaunchedEffect(viewModel.search) {
                         if (viewModel.search.isNotEmpty() && filteredApps.isNotEmpty()) {
-                            expandedGroups.value = expandedGroups.value + appGroup.uid
+                            expandedGroups.value += appGroup.uid
                         } else if (viewModel.search.isEmpty()) {
-                            expandedGroups.value = expandedGroups.value - appGroup.uid
+                            expandedGroups.value -= appGroup.uid
                         }
                     }
                 }
@@ -495,39 +495,34 @@ private fun SuperUserContent(
                         model = ImageRequest.Builder(context)
                             .data(app.packageInfo)
                             .size(targetSizePx)
-                            .crossfade(true)
+                            .crossfade(false)
                             .build()
                     )
-
-                    val listItemContent = remember(app.packageName, appGroup.uid) {
-                        @Composable {
-                            ListItem(
-                                modifier = Modifier
-                                    .clickable { navigator.navigate(AppProfileScreenDestination(app)) }
-                                    .fillMaxWidth()
-                                    .padding(start = 10.dp),
-                                headlineContent = { Text(app.label, style = MaterialTheme.typography.bodyMedium) },
-                                supportingContent = { Text(app.packageName, style = MaterialTheme.typography.bodySmall) },
-                                leadingContent = {
-                                    Image(
-                                        painter = painter,
-                                        contentDescription = app.label,
-                                        modifier = Modifier
-                                            .padding(4.dp)
-                                            .size(36.dp),
-                                        contentScale = ContentScale.Crop
-                                    )
-                                }
-                            )
-                        }
-                    }
 
                     AnimatedVisibility(
                         visible = expandedGroups.value.contains(appGroup.uid),
                         enter = fadeIn() + expandVertically(),
                         exit = fadeOut() + shrinkVertically()
                     ) {
-                        listItemContent()
+                        ListItem(
+                            modifier = Modifier
+                                .clickable { navigator.navigate(AppProfileScreenDestination(app)) }
+                                .animateItem()
+                                .fillMaxWidth()
+                                .padding(start = 10.dp),
+                            headlineContent = { Text(app.label, style = MaterialTheme.typography.bodyMedium) },
+                            supportingContent = { Text(app.packageName, style = MaterialTheme.typography.bodySmall) },
+                            leadingContent = {
+                                Image(
+                                    painter = painter,
+                                    contentDescription = app.label,
+                                    modifier = Modifier
+                                        .padding(4.dp)
+                                        .size(36.dp),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                        )
                     }
                 }
             }

@@ -20,6 +20,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -32,6 +33,10 @@ import com.resukisu.resukisu.ui.util.LocalSelectedPage
 import com.resukisu.resukisu.ui.util.getKpmModuleCount
 import com.resukisu.resukisu.ui.util.getModuleCount
 import com.resukisu.resukisu.ui.util.getSuperuserCount
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 
 @SuppressLint("ContextCastToActivity")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -39,19 +44,33 @@ import com.resukisu.resukisu.ui.util.getSuperuserCount
 fun BottomBar(destinations: List<BottomBarDestination>) {
     val cardColor = MaterialTheme.colorScheme.surfaceContainer
     val activity = LocalContext.current as MainActivity
-    val settings by activity.settingsStateFlow.collectAsState()
 
-    // 检查是否隐藏红点
-    val isHideOtherInfo = settings.isHideOtherInfo
+    // 是否隐藏 badge
+    val isHideOtherInfo by activity.settingsStateFlow
+        .map { it.isHideOtherInfo }
+        .distinctUntilChanged()
+        .collectAsState(initial = false)
 
     // 翻页处理
     val page = LocalSelectedPage.current
     val handlePageChange = LocalHandlePageChange.current
 
     // 收集计数数据
-    val superuserCount = getSuperuserCount()
-    val moduleCount = getModuleCount()
-    val kpmModuleCount = getKpmModuleCount()
+    val superuserCount by produceState(initialValue = 0) {
+        withContext(Dispatchers.IO) {
+            value = getSuperuserCount()
+        }
+    }
+    val moduleCount by produceState(initialValue = 0) {
+        withContext(Dispatchers.IO) {
+            value = getModuleCount()
+        }
+    }
+    val kpmModuleCount by produceState(initialValue = 0) {
+        withContext(Dispatchers.IO) {
+            value = getKpmModuleCount()
+        }
+    }
 
     FlexibleBottomAppBar(
         modifier = Modifier.windowInsetsPadding(
