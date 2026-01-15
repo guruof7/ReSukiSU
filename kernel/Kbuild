@@ -5,6 +5,13 @@ kernelsu-objs += app_profile.o
 kernelsu-objs += apk_sign.o
 kernelsu-objs += sucompat.o
 
+ifeq ($(CONFIG_KSU_SUSFS), y)
+$(info -- $(REPO_NAME): SUSFS Inline Hook is temporary broken)
+$(info -- $(REPO_NAME): if you still want continue, comment out this notice in Kbuild file)
+$(info -- $(REPO_NAME): Process with your own risk!)
+$(error Temporary Stop SUSFS Build)
+endif
+
 ifeq ($(CONFIG_KSU_SUSFS)$(CONFIG_KSU_MANUAL_HOOK), nn)
 kernelsu-objs += syscall_hook_manager.o
 kernelsu-objs += util.o
@@ -25,7 +32,6 @@ kernelsu-objs += throne_tracker.o
 kernelsu-objs += ksud.o
 kernelsu-objs += seccomp_cache.o
 kernelsu-objs += file_wrapper.o
-kernelsu-objs += throne_comm.o
 kernelsu-objs += sulog.o
 
 kernelsu-objs += selinux/selinux.o
