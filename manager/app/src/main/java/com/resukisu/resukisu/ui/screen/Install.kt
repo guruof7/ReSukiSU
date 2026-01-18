@@ -372,16 +372,18 @@ fun InstallScreen(
                         val defaultIndex = partitions.indexOf(defaultPartition).takeIf { it >= 0 } ?: 0
                         if (!hasCustomSelected) partitionSelectionIndex = defaultIndex
 
-                        DropdownWidget(
-                            icon = Icons.Default.Edit,
-                            items = displayPartitions,
-                            selectedIndex = partitionSelectionIndex,
-                            title = "${stringResource(R.string.install_select_partition)} (${suffix})",
-                            onSelectedIndexChange = { index ->
-                                hasCustomSelected = true
-                                partitionSelectionIndex = index
-                            },
-                        )
+                        if (displayPartitions.isNotEmpty()) {
+                            DropdownWidget(
+                                icon = Icons.Default.Edit,
+                                items = displayPartitions,
+                                selectedIndex = partitionSelectionIndex,
+                                title = "${stringResource(R.string.install_select_partition)} (${suffix})",
+                                onSelectedIndexChange = { index ->
+                                    hasCustomSelected = true
+                                    partitionSelectionIndex = index
+                                },
+                            )
+                        }
                     }
                 }
             }
