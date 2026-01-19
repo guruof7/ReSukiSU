@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -56,12 +57,14 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.resukisu.resukisu.ui.theme.CardConfig
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SettingsBaseWidget(
     modifier: Modifier = Modifier,
@@ -123,9 +126,11 @@ fun SettingsBaseWidget(
                 Text(
                     text = title,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = alpha),
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1,
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMediumEmphasized,
+                    fontSize = MaterialTheme.typography.titleMediumEmphasized.fontSize,
+                    fontWeight = FontWeight.SemiBold,
+                    lineHeight = MaterialTheme.typography.bodyMediumEmphasized.lineHeight,
+                    fontFamily = MaterialTheme.typography.titleMediumEmphasized.fontFamily,
                 )
                 description?.let {
                     val color = if (isError) MaterialTheme.colorScheme.error
@@ -133,7 +138,11 @@ fun SettingsBaseWidget(
                     Text(
                         text = it,
                         color = color.copy(alpha = alpha),
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMediumEmphasized,
+                        fontSize = MaterialTheme.typography.bodyMediumEmphasized.fontSize,
+                        fontFamily = MaterialTheme.typography.bodySmallEmphasized.fontFamily,
+                        lineHeight = MaterialTheme.typography.bodyMediumEmphasized.lineHeight,
+                        fontWeight = MaterialTheme.typography.bodyMediumEmphasized.fontWeight,
                     )
                 }
                 descriptionColumnContent()
@@ -376,7 +385,7 @@ fun SplicedColumnGroup(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun DropdownWidget(
     icon: ImageVector? = null,
@@ -427,7 +436,11 @@ fun DropdownWidget(
             Text(
                 text = items[selectedIndex],
                 color = color.copy(alpha = alpha),
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMediumEmphasized,
+                fontSize = MaterialTheme.typography.bodyMediumEmphasized.fontSize,
+                fontFamily = MaterialTheme.typography.bodySmallEmphasized.fontFamily,
+                lineHeight = MaterialTheme.typography.bodyMediumEmphasized.lineHeight,
+                fontWeight = MaterialTheme.typography.bodyMediumEmphasized.fontWeight,
             )
         }
     )
