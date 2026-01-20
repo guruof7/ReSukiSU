@@ -1,9 +1,9 @@
 [versions]
 accompanist-drawablepainter = "0.37.3"
-agp = "8.13.1"
+agp = "9.0.0"
 gson = "2.13.2"
 kotlin = "2.2.21"
-ksp = "2.2.21-2.0.4"
+ksp = "2.3.4"
 m3color = "2025.4"
 haze = "1.7.1"
 capsule = "2.1.2"
@@ -21,7 +21,6 @@ appiconloader-coil = "1.5.0"
 parcelablelist = "2.0.1"
 libsu = "6.0.0"
 apksign = "1.4"
-cmaker = "1.2"
 compose-material3 = "1.5.0-alpha09"
 compose-ui = "1.9.4"
 documentfile = "1.1.0"
@@ -31,7 +30,6 @@ foundation = "1.9.4"
 
 [plugins]
 agp-app = { id = "com.android.application", version.ref = "agp" }
-agp-lib = { id = "com.android.library", version.ref = "agp" }
 
 kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
@@ -39,7 +37,6 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 
 lsplugin-apksign = { id = "org.lsposed.lsplugin.apksign", version.ref = "apksign" }
-lsplugin-cmaker = { id = "org.lsposed.lsplugin.cmaker", version.ref = "cmaker" }
 
 [libraries]
 accompanist-drawablepainter = { module = "com.google.accompanist:accompanist-drawablepainter", version.ref = "accompanist-drawablepainter" }
