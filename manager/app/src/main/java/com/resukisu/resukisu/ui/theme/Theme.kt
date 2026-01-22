@@ -7,15 +7,31 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.*
 import androidx.compose.material3.ColorScheme
-import androidx.compose.runtime.*
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialExpressiveTheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MotionScheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.paint
@@ -370,7 +386,8 @@ private fun CustomBackgroundLayer(uri: Uri, darkTheme: Boolean) {
                 .fillMaxSize()
                 .paint(painter = painter, contentScale = ContentScale.Crop)
                 .graphicsLayer {
-                    this.alpha = (painter.state as? AsyncImagePainter.State.Success)?.let { 1f } ?: 0f
+                    this.alpha =
+                        (painter.state as? AsyncImagePainter.State.Success)?.let { 1f } ?: 0f
                 }
         )
 
@@ -381,20 +398,9 @@ private fun CustomBackgroundLayer(uri: Uri, darkTheme: Boolean) {
 
 @Composable
 private fun BackgroundOverlay(darkTheme: Boolean) {
-    val dimFactor = CardConfig.cardDim
+    if (!ThemeConfig.backgroundImageLoaded) return
 
-    // 主要遮罩层
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                if (darkTheme) {
-                    Color.Black.copy(alpha = 0.3f + dimFactor * 0.4f)
-                } else {
-                    Color.White.copy(alpha = 0.05f + dimFactor * 0.3f)
-                }
-            )
-    )
+    val dimFactor = CardConfig.cardDim
 
     // 边缘渐变遮罩
     Box(

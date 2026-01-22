@@ -1,22 +1,20 @@
 package com.resukisu.resukisu.ui.screen.main
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkHorizontally
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.Image
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -48,9 +46,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.GridView
-import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.RestoreFromTrash
@@ -66,8 +64,6 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -84,7 +80,6 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -92,15 +87,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -109,7 +100,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.ramcosta.composedestinations.generated.destinations.AppProfileScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -120,8 +110,9 @@ import com.resukisu.resukisu.ui.component.FabMenuPresets
 import com.resukisu.resukisu.ui.component.SearchAppBar
 import com.resukisu.resukisu.ui.component.VerticalExpandableFab
 import com.resukisu.resukisu.ui.component.pinnedScrollBehavior
+import com.resukisu.resukisu.ui.component.settings.SettingsBaseWidget
 import com.resukisu.resukisu.ui.screen.LabelText
-import com.resukisu.resukisu.ui.util.HanziToPinyin
+import com.resukisu.resukisu.ui.theme.CardConfig
 import com.resukisu.resukisu.ui.util.module.ModuleModify
 import com.resukisu.resukisu.ui.viewmodel.AppCategory
 import com.resukisu.resukisu.ui.viewmodel.SortType
@@ -343,10 +334,6 @@ private fun SuperUserContent(
     bottomPadding: Dp,
     hazeState: HazeState?
 ) {
-    val expandedGroups = remember { mutableStateOf(setOf<Int>()) }
-    val density = LocalDensity.current
-    val targetSizePx = remember(density) { with(density) { 36.dp.roundToPx() } }
-    val context = LocalContext.current
     val pullRefreshState = rememberPullToRefreshState()
 
     if (filteredAndSortedAppGroups.isEmpty()) {
@@ -373,7 +360,9 @@ private fun SuperUserContent(
                             imageVector = if (isSearchEmpty) Icons.TwoTone.SearchOff else Icons.TwoTone.Archive,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(96.dp).padding(bottom = 16.dp)
+                            modifier = Modifier
+                                .size(96.dp)
+                                .padding(bottom = 16.dp)
                         )
                         Text(
                             text = if (isSearchEmpty || selectedCategory == AppCategory.ALL) {
@@ -399,12 +388,18 @@ private fun SuperUserContent(
             .fillMaxSize(),
         indicator = {
             PullToRefreshDefaults.LoadingIndicator(
-                modifier = Modifier.padding(top = innerPadding.calculateTopPadding()).align(Alignment.TopCenter),
+                modifier = Modifier
+                    .padding(top = innerPadding.calculateTopPadding())
+                    .align(Alignment.TopCenter),
                 state = pullRefreshState,
                 isRefreshing = viewModel.isRefreshing,
             )
         },
     ) {
+        val sharedStiffness = Spring.StiffnessMediumLow
+        val cornerRadius = 16.dp
+        val connectionRadius = 4.dp
+
         LazyColumn(
             state = listState,
             modifier = Modifier
@@ -412,97 +407,75 @@ private fun SuperUserContent(
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
         ) {
             item {
-                Spacer(modifier = Modifier.height(innerPadding.calculateTopPadding()))
+                Spacer(modifier = Modifier.height(innerPadding.calculateTopPadding() + 5.dp))
             }
-            filteredAndSortedAppGroups.forEachIndexed { _, appGroup ->
+            filteredAndSortedAppGroups.forEachIndexed { appGroupIndex, appGroup ->
                 item(key = "${appGroup.uid}-${appGroup.mainApp.packageName}") {
-                    AppGroupItem(
-                        expandedGroups = expandedGroups,
-                        appGroup = appGroup,
-                        isSelected = appGroup.packageNames.any { viewModel.selectedApps.contains(it) },
-                        onToggleSelection = {
-                            appGroup.packageNames.forEach { viewModel.toggleAppSelection(it) }
-                        },
-                        onClick = {
-                            if (viewModel.showBatchActions) {
-                                appGroup.packageNames.forEach { viewModel.toggleAppSelection(it) }
-                            } else if (appGroup.apps.size > 1) {
-                                expandedGroups.value = if (expandedGroups.value.contains(appGroup.uid)) {
-                                    expandedGroups.value - appGroup.uid
-                                } else {
-                                    expandedGroups.value + appGroup.uid
-                                }
-                            } else {
-                                navigator.navigate(AppProfileScreenDestination(appGroup.mainApp))
-                            }
-                        },
-                        onLongClick = {
-                            if (!viewModel.showBatchActions) {
-                                viewModel.toggleBatchMode()
-                                appGroup.packageNames.forEach { viewModel.toggleAppSelection(it) }
-                            }
-                        },
-                        viewModel = viewModel
+                    val isFirst = appGroupIndex == 0
+                    val isLast = appGroupIndex == filteredAndSortedAppGroups.size - 1
+
+                    val targetTopRadius = if (isFirst) cornerRadius else connectionRadius
+                    val targetBottomRadius = if (isLast) cornerRadius else connectionRadius
+
+                    val animatedTopRadius by animateDpAsState(
+                        targetValue = targetTopRadius,
+                        animationSpec = spring(stiffness = sharedStiffness),
+                        label = "TopCornerRadius"
                     )
-                }
-
-                if (appGroup.apps.size <= 1) return@forEachIndexed
-
-                val filteredApps = appGroup.apps.filter { app ->
-                    app.label.contains(viewModel.search, true) ||
-                            app.packageName.contains(viewModel.search, true) ||
-                            HanziToPinyin.getInstance().toPinyinString(app.label)
-                                ?.contains(viewModel.search, true) == true
-                }
-
-                item {
-                    LaunchedEffect(viewModel.search) {
-                        if (viewModel.search.isNotEmpty() && filteredApps.isNotEmpty()) {
-                            expandedGroups.value += appGroup.uid
-                        } else if (viewModel.search.isEmpty()) {
-                            expandedGroups.value -= appGroup.uid
-                        }
-                    }
-                }
-
-                items(filteredApps, key = { "${it.packageName}-${it.uid}" }) { app ->
-                    val painter = rememberAsyncImagePainter(
-                        model = ImageRequest.Builder(context)
-                            .data(app.packageInfo)
-                            .size(targetSizePx)
-                            .crossfade(false)
-                            .build()
+                    val animatedBottomRadius by animateDpAsState(
+                        targetValue = targetBottomRadius,
+                        animationSpec = spring(stiffness = sharedStiffness),
+                        label = "BottomCornerRadius"
                     )
 
-                    AnimatedVisibility(
-                        visible = expandedGroups.value.contains(appGroup.uid),
-                        enter = fadeIn() + expandVertically(),
-                        exit = fadeOut() + shrinkVertically()
+                    Surface(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .padding(top = 2.dp),
+                        shape = RoundedCornerShape(
+                            topStart = animatedTopRadius,
+                            topEnd = animatedTopRadius,
+                            bottomStart = animatedBottomRadius,
+                            bottomEnd = animatedBottomRadius
+                        ),
+                        color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
+                            alpha = CardConfig.cardAlpha
+                        ),
                     ) {
-                        ListItem(
-                            modifier = Modifier
-                                .clickable { navigator.navigate(AppProfileScreenDestination(app)) }
-                                .animateItem()
-                                .fillMaxWidth()
-                                .padding(start = 10.dp),
-                            headlineContent = { Text(app.label, style = MaterialTheme.typography.bodyMedium) },
-                            supportingContent = { Text(app.packageName, style = MaterialTheme.typography.bodySmall) },
-                            leadingContent = {
-                                Image(
-                                    painter = painter,
-                                    contentDescription = app.label,
-                                    modifier = Modifier
-                                        .padding(4.dp)
-                                        .size(36.dp),
-                                    contentScale = ContentScale.Crop
+                        AppGroupItem(
+                            appGroup = appGroup,
+                            isSelected = appGroup.packageNames.any {
+                                viewModel.selectedApps.contains(
+                                    it
                                 )
-                            }
+                            },
+                            onToggleSelection = {
+                                appGroup.packageNames.forEach {
+                                    viewModel.toggleAppSelection(
+                                        it
+                                    )
+                                }
+                            },
+                            onClick = {
+                                if (viewModel.showBatchActions) {
+                                    appGroup.packageNames.forEach { viewModel.toggleAppSelection(it) }
+                                } else {
+                                    navigator.navigate(AppProfileScreenDestination(appGroup))
+                                }
+                            },
+                            onLongClick = {
+                                if (!viewModel.showBatchActions) {
+                                    viewModel.toggleBatchMode()
+                                    appGroup.packageNames.forEach { viewModel.toggleAppSelection(it) }
+                                }
+                            },
+                            viewModel = viewModel
                         )
                     }
                 }
             }
             item {
-                Spacer(modifier = Modifier.height(bottomPadding))
+                Spacer(modifier = Modifier.height(bottomPadding + 5.dp))
             }
         }
     }
@@ -588,7 +561,9 @@ private fun BottomSheetContent(
     appCounts: Map<AppCategory, Int>
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 24.dp)
     ) {
         Text(
             text = stringResource(R.string.menu_options),
@@ -696,7 +671,9 @@ private fun CategoryChip(
         tonalElevation = if (isSelected) 4.dp else 0.dp
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -806,113 +783,87 @@ private fun AppGroupItem(
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     viewModel: SuperUserViewModel,
-    expandedGroups: MutableState<Set<Int>>
 ) {
     val mainApp = appGroup.mainApp
 
-    ListItem(
-        modifier = Modifier.pointerInput(Unit) {
-            detectTapGestures(
-                onLongPress = { onLongClick() },
-                onTap = { onClick() }
-            )
+    SettingsBaseWidget(
+        onClick = {
+            onClick()
         },
-        headlineContent = {
-            Text(mainApp.label)
+        onLongClick = {
+            onLongClick()
         },
-        supportingContent = {
-            Column {
-                val summaryText = if (appGroup.apps.size > 1) {
-                    stringResource(R.string.group_contains_apps, appGroup.apps.size)
+        title = mainApp.label,
+        description = if (appGroup.apps.size > 1) {
+            stringResource(R.string.group_contains_apps, appGroup.apps.size)
+        } else {
+            mainApp.packageName
+        },
+        descriptionColumnContent = {
+            Spacer(modifier = Modifier.height(5.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                if (appGroup.allowSu) {
+                    LabelText(label = "ROOT")
                 } else {
-                    mainApp.packageName
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(summaryText)
-
-                    if (appGroup.apps.size > 1) {
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowDown,
-                            contentDescription = null,
-                            modifier = Modifier.rotate(
-                                animateFloatAsState(
-                                    targetValue = if (expandedGroups.value.contains(appGroup.uid)) 180f else 0f,
-                                    animationSpec = tween(200, easing = LinearOutSlowInEasing),
-                                    label = ""
-                                ).value
-                            ).size(18.dp)
+                    if (Natives.uidShouldUmount(appGroup.uid)) {
+                        LabelText(
+                            label = "UMOUNT",
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                         )
                     }
                 }
-
-                Spacer(modifier = Modifier.height(5.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    if (appGroup.allowSu) {
-                        LabelText(label = "ROOT")
-                    } else {
-                        if (Natives.uidShouldUmount(appGroup.uid)) {
-                            LabelText(
-                                label = "UMOUNT",
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                        }
-                    }
-                    if (appGroup.hasCustomProfile) {
+                if (appGroup.hasCustomProfile) {
+                    LabelText(
+                        label = "CUSTOM",
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                    )
+                } else if (!appGroup.allowSu) {
+                    LabelText(
+                        label = "DEFAULT",
+                        containerColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                if (appGroup.apps.size > 1) {
+                    appGroup.userName?.let {
                         LabelText(
-                            label = "CUSTOM",
-                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                            label = it,
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
-                    } else if (!appGroup.allowSu) {
-                        LabelText(
-                            label = "DEFAULT",
-                            containerColor = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    if (appGroup.apps.size > 1) {
-                        appGroup.userName?.let {
-                            LabelText(
-                                label = it,
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                            )
-                        }
                     }
                 }
             }
         },
-        leadingContent = {
+        rowHeader = {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(mainApp.packageInfo)
                     .crossfade(true)
                     .build(),
                 contentDescription = mainApp.label,
-                modifier = Modifier.padding(4.dp).width(48.dp).height(48.dp)
+                modifier = Modifier
+                    .padding(4.dp)
+                    .width(48.dp)
+                    .height(48.dp)
             )
         },
-        trailingContent = {
-            AnimatedVisibility(
-                visible = viewModel.showBatchActions,
-                enter = fadeIn(animationSpec = tween(200)) + scaleIn(
-                    animationSpec = tween(200),
-                    initialScale = 0.6f
-                ),
-                exit = fadeOut(animationSpec = tween(200)) + scaleOut(
-                    animationSpec = tween(200),
-                    targetScale = 0.6f
-                )
-            ) {
+        iconPlaceholder = false,
+    ) {
+        AnimatedContent(
+            targetState = viewModel.showBatchActions,
+            transitionSpec = {
+                fadeIn(tween(200)) togetherWith
+                        fadeOut(tween(200))
+            },
+            label = "BatchActionTransition"
+        ) { showBatchActions ->
+            if (showBatchActions) {
                 val checkboxInteractionSource = remember { MutableInteractionSource() }
                 val isCheckboxPressed by checkboxInteractionSource.collectIsPressedAsState()
 
@@ -937,10 +888,14 @@ private fun AppGroupItem(
                         interactionSource = checkboxInteractionSource,
                     )
                 }
+            } else {
+                Icon(
+                    imageVector = Icons.Filled.ChevronRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(24.dp)
+                )
             }
-        },
-        colors = ListItemDefaults.colors().copy(
-            containerColor = Color.Transparent
-        )
-    )
+        }
+    }
 }

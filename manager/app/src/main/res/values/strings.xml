@@ -107,6 +107,7 @@
     <string name="app_profile_template_sync">Sync online templates</string>
     <string name="app_profile_template_save_failed">Failed to save template</string>
     <string name="app_profile_template_import_empty">Clipboard is empty!</string>
+    <string name="affected_applications">Affected applications</string>
     <string name="module_changelog_failed">Fetch changelog failed: %s</string>
     <string name="settings_check_update">Update notifications</string>
     <string name="settings_check_update_summary">Auto-check for module and manager updates</string>

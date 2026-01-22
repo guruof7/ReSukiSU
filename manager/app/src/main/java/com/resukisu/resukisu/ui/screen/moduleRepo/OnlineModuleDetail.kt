@@ -252,14 +252,14 @@ fun InfoTab(
             SplicedColumnGroup(
                 title = stringResource(R.string.author)
             ) {
-                module.authorList.forEach {
+                module.authorList.forEach { author ->
                     item {
                         SettingsBaseWidget(
                             icon = Icons.Default.Person,
                             onClick = {
-                                uriHandler.openUri(it.link)
+                                uriHandler.openUri(author.link)
                             },
-                            title = it.name
+                            title = author.name
                         ) {
                             Icon(
                                 modifier = Modifier.size(24.dp),
@@ -337,7 +337,9 @@ fun ReadmeTab(
             }
             item {
                 Surface(
-                    modifier = Modifier.padding(16.dp).clip(RoundedCornerShape(12.dp)),
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .clip(RoundedCornerShape(12.dp)),
                     color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
                         alpha = CardConfig.cardAlpha
                     )
@@ -441,10 +443,10 @@ fun ReleaseCard(module: ModuleRepoViewModel.RepoModule, release: ReleaseInfo, co
             if (release.assets.isEmpty()) return@Card
 
             Column {
-                release.assets.forEach {
+                release.assets.forEach { assetInfo ->
                     SettingsBaseWidget(
                         modifier = Modifier.clip(RoundedCornerShape(12.dp)),
-                        title = it.name,
+                        title = assetInfo.name,
                         noVerticalPadding = true,
                         onClick = {
                             coroutineScope.launch {
@@ -459,7 +461,7 @@ fun ReleaseCard(module: ModuleRepoViewModel.RepoModule, release: ReleaseInfo, co
                                 downloadAssetAndInstall(
                                     context,
                                     module,
-                                    it,
+                                    assetInfo,
                                     navigator,
                                     coroutineScope
                                 )
@@ -467,8 +469,8 @@ fun ReleaseCard(module: ModuleRepoViewModel.RepoModule, release: ReleaseInfo, co
                         },
                         iconPlaceholder = false,
                         description = stringResource(R.string.assert_support_content).format(
-                            formatFileSize(it.size),
-                            it.downloadCount
+                            formatFileSize(assetInfo.size),
+                            assetInfo.downloadCount
                         )
                     ) {
                         FilledTonalButton(

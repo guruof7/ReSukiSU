@@ -8,23 +8,38 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.KeyboardActionHandler
+import androidx.compose.foundation.text.input.OutputTransformation
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
@@ -42,23 +57,35 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -77,7 +104,8 @@ fun SettingsBaseWidget(
     isError: Boolean = false,
     noVerticalPadding: Boolean = false,
     noHorizontalPadding: Boolean = false,
-    onClick: () -> Unit = {},
+    onClick: (Offset) -> Unit = {},
+    onLongClick: (Offset) -> Unit = {},
     hapticFeedbackType: HapticFeedbackType = HapticFeedbackType.ContextClick,
     rowHeader: @Composable RowScope.() -> Unit = {},
     foreContent: @Composable BoxScope.() -> Unit = {},
@@ -89,12 +117,21 @@ fun SettingsBaseWidget(
 
     var rowModifier = modifier
         .fillMaxWidth()
-        .clickable(
-            enabled = enabled,
-            onClick = {
-                haptic.performHapticFeedback(hapticFeedbackType)
-                onClick()
-            }
+        .then(
+            if (enabled) {
+                Modifier.pointerInput(Unit) {
+                    detectTapGestures(
+                        onLongPress = {
+                            haptic.performHapticFeedback(hapticFeedbackType)
+                            onLongClick(it)
+                        },
+                        onTap = {
+                            haptic.performHapticFeedback(hapticFeedbackType)
+                            onClick(it)
+                        }
+                    )
+                }
+            } else Modifier
         )
 
     rowModifier = if (!noVerticalPadding) rowModifier.padding(vertical = 16.dp) else rowModifier
@@ -161,6 +198,120 @@ fun SettingsBaseWidget(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalLayoutApi::class)
+@Composable
+fun SettingsTextFieldWidget(
+    modifier: Modifier = Modifier,
+    state: TextFieldState,
+    onClick: (() -> Unit)? = null,
+    title: String = "",
+    labelColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    useLabelAsPlaceholder: Boolean = false,
+    enabled: Boolean = true,
+    readOnly: Boolean = false,
+    inputTransformation: InputTransformation? = null,
+    textStyle: TextStyle = MaterialTheme.typography.bodyMediumEmphasized.copy(
+        color = MaterialTheme.colorScheme.onSurface,
+        fontFamily = MaterialTheme.typography.bodySmallEmphasized.fontFamily,
+    ),
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    onKeyboardAction: KeyboardActionHandler? = null,
+    lineLimits: TextFieldLineLimits = TextFieldLineLimits.Default,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingContent: @Composable (() -> Unit)? = null,
+    onTextLayout: (Density.(getResult: () -> TextLayoutResult?) -> Unit)? = null,
+    interactionSource: MutableInteractionSource? = null,
+    outputTransformation: OutputTransformation? = null,
+    cursorBrush: Brush = SolidColor(MaterialTheme.colorScheme.primary),
+    scrollState: ScrollState = rememberScrollState(),
+) {
+    @Suppress("NAME_SHADOWING")
+    val interactionSource = interactionSource ?: remember { MutableInteractionSource() }
+    val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
+    val isFocused by interactionSource.collectIsFocusedAsState()
+    val isImeVisible = WindowInsets.isImeVisible
+
+    val isClickableMode = onClick != null
+
+    LaunchedEffect(isImeVisible) {
+        if (!isImeVisible && isFocused) {
+            focusManager.clearFocus()
+        }
+    }
+
+    val currentOnTextLayout by rememberUpdatedState(onTextLayout)
+
+    val showTitle = if (useLabelAsPlaceholder) state.text.isNotEmpty() else true
+    val showPlaceholder = useLabelAsPlaceholder && state.text.isEmpty()
+
+    fun onClickInternal() {
+        if (onClick != null) {
+            onClick()
+            return
+        }
+
+        if (!readOnly && enabled) {
+            focusRequester.requestFocus()
+        }
+    }
+
+    SettingsBaseWidget(
+        modifier = modifier,
+        title = if (showTitle) title else "",
+        icon = null,
+        iconPlaceholder = false,
+        rowHeader = {
+            leadingIcon?.invoke()
+        },
+        onClick = {
+            onClickInternal()
+        },
+        descriptionColumnContent = {
+            BasicTextField(
+                state = state,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester)
+                    .focusProperties {
+                        canFocus = !isClickableMode
+                    },
+                enabled = enabled,
+                readOnly = readOnly,
+                textStyle = textStyle,
+                cursorBrush = cursorBrush,
+                keyboardOptions = keyboardOptions,
+                onKeyboardAction = onKeyboardAction,
+                lineLimits = lineLimits,
+                onTextLayout = currentOnTextLayout,
+                interactionSource = interactionSource,
+                inputTransformation = inputTransformation,
+                outputTransformation = outputTransformation,
+                scrollState = scrollState,
+                decorator = { innerTextField ->
+                    Box(
+                        modifier = Modifier.clickable {
+                            onClickInternal()
+                        }
+                    ) {
+                        if (showPlaceholder) {
+                            Text(
+                                text = title,
+                                style = textStyle,
+                                color = labelColor.copy(alpha = 0.6f),
+                            )
+                        }
+                        innerTextField()
+                    }
+                }
+            )
+        },
+        content = {
+            trailingContent?.invoke()
+        }
+    )
+}
+
 @Composable
 fun SettingsJumpPageWidget(
     icon: ImageVector? = null,
@@ -170,8 +321,10 @@ fun SettingsJumpPageWidget(
     descriptionColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     enabled: Boolean = true,
     isError: Boolean = false,
-    onClick: () -> Unit = {},
+    onClick: (Offset) -> Unit = {},
+    onLongClick: (Offset) -> Unit = {},
     hapticFeedbackType: HapticFeedbackType = HapticFeedbackType.ContextClick,
+    rowHeader: @Composable RowScope.() -> Unit = {},
     foreContent: @Composable BoxScope.() -> Unit = {},
     descriptionColumnContent: @Composable ColumnScope.() -> Unit = {},
 ) {
@@ -184,7 +337,9 @@ fun SettingsJumpPageWidget(
         enabled = enabled,
         isError = isError,
         onClick = onClick,
+        onLongClick = onLongClick,
         hapticFeedbackType = hapticFeedbackType,
+        rowHeader = rowHeader,
         foreContent = foreContent,
         descriptionColumnContent = descriptionColumnContent
     ) {
@@ -218,7 +373,7 @@ fun SettingsSwitchWidget(
         title = title,
         enabled = enabled,
         isError = isError,
-        onClick = toggleAction,
+        onClick = { toggleAction() },
         hapticFeedbackType = HapticFeedbackType.ToggleOn,
         description = description,
     ) {
@@ -372,9 +527,11 @@ fun SplicedColumnGroup(
                             modifier = Modifier
                                 .padding(top = topPadding)
                                 .clip(shape)
-                                .background(MaterialTheme.colorScheme.surfaceBright.copy(
-                                    alpha = CardConfig.cardAlpha
-                                ))
+                                .background(
+                                    MaterialTheme.colorScheme.surfaceBright.copy(
+                                        alpha = CardConfig.cardAlpha
+                                    )
+                                )
                         ) {
                             itemData.content()
                         }
@@ -397,6 +554,7 @@ fun DropdownWidget(
     isError: Boolean = false,
     hapticFeedbackType: HapticFeedbackType = HapticFeedbackType.ContextClick,
     foreContent: @Composable BoxScope.() -> Unit = {},
+    afterContent: @Composable RowScope.(Int) -> Unit = {},
     items: List<String>,
     selectedIndex: Int,
     maxHeight: Dp? = 400.dp,
@@ -472,6 +630,9 @@ fun DropdownWidget(
                             text = items[index],
                             isSelected = currentIndex == index,
                             colors = colors,
+                            afterContent = { item ->
+                                afterContent(items.indexOf(item))
+                            },
                             onClick = {
                                 setCurrentIndex(index)
                             }
@@ -504,6 +665,7 @@ private fun DropdownItem(
     text: String,
     isSelected: Boolean,
     colors: SuperDropdownColors,
+    afterContent: @Composable RowScope.(String) -> Unit = {},
     onClick: () -> Unit
 ) {
     val backgroundColor = if (isSelected) {
@@ -544,6 +706,7 @@ private fun DropdownItem(
             color = contentColor,
             modifier = Modifier.weight(1f)
         )
+        afterContent(text)
     }
 }
 

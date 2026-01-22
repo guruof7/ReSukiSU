@@ -1,26 +1,19 @@
 package com.resukisu.resukisu.ui.component.profile
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ListItem
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -47,27 +40,33 @@ import com.resukisu.resukisu.Natives
 import com.resukisu.resukisu.R
 import com.resukisu.resukisu.profile.Capabilities
 import com.resukisu.resukisu.profile.Groups
-import com.resukisu.resukisu.ui.component.settings.DropdownWidget
 import com.resukisu.resukisu.ui.component.rememberCustomDialog
+import com.resukisu.resukisu.ui.component.settings.DropdownWidget
+import com.resukisu.resukisu.ui.component.settings.SettingsJumpPageWidget
+import com.resukisu.resukisu.ui.component.settings.SettingsTextFieldWidget
+import com.resukisu.resukisu.ui.component.settings.SplicedColumnGroup
+import com.resukisu.resukisu.ui.component.settings.SplicedGroupScope
 import com.resukisu.resukisu.ui.util.isSepolicyValid
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RootProfileConfig(
-    modifier: Modifier = Modifier,
-    fixedName: Boolean,
     profile: Natives.Profile,
     onProfileChange: (Natives.Profile) -> Unit,
 ) {
-    Column(modifier = modifier) {
-        if (!fixedName) {
-            OutlinedTextField(
-                label = { Text(stringResource(R.string.profile_name)) },
-                value = profile.name,
-                onValueChange = { onProfileChange(profile.copy(name = it)) }
-            )
-        }
+    SplicedColumnGroup {
+        rootProfileConfig(
+            profile,
+            onProfileChange
+        )
+    }
+}
 
+fun SplicedGroupScope.rootProfileConfig(
+    profile: Natives.Profile,
+    onProfileChange: (Natives.Profile) -> Unit,
+) {
+    item {
         UidPanel(uid = profile.uid, label = "uid", onUidChange = {
             onProfileChange(
                 profile.copy(
@@ -76,7 +75,9 @@ fun RootProfileConfig(
                 )
             )
         })
+    }
 
+    item {
         UidPanel(uid = profile.gid, label = "gid", onUidChange = {
             onProfileChange(
                 profile.copy(
@@ -85,7 +86,9 @@ fun RootProfileConfig(
                 )
             )
         })
+    }
 
+    item {
         val selectedGroups = profile.groups.ifEmpty { listOf(0) }.let { e ->
             e.mapNotNull { g ->
                 Groups.entries.find { it.gid == g }
@@ -99,7 +102,9 @@ fun RootProfileConfig(
                 )
             )
         }
+    }
 
+    item {
         val selectedCaps = profile.capabilities.mapNotNull { e ->
             Capabilities.entries.find { it.cap == e }
         }
@@ -112,7 +117,9 @@ fun RootProfileConfig(
                 )
             )
         }
+    }
 
+    item {
         MountNameSpacePanel(profile = profile) {
             onProfileChange(
                 profile.copy(
@@ -121,7 +128,9 @@ fun RootProfileConfig(
                 )
             )
         }
+    }
 
+    item {
         SELinuxPanel(profile = profile, onSELinuxChange = { domain, rules ->
             onProfileChange(
                 profile.copy(
@@ -131,7 +140,6 @@ fun RootProfileConfig(
                 )
             )
         })
-
     }
 }
 
@@ -186,36 +194,23 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>)
         )
     }
 
-    OutlinedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        colors = CardDefaults.cardColors().copy(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-            contentColor = MaterialTheme.colorScheme.onSurface
-        ),
-    ) {
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable {
-                    selectGroupsDialog.show()
-                }
-                .padding(16.dp)
-        ) {
-            Text(stringResource(R.string.profile_groups))
+    SettingsJumpPageWidget(
+        title = stringResource(R.string.profile_groups),
+        iconPlaceholder = false,
+        onClick = {
+            selectGroupsDialog.show()
+        },
+        descriptionColumnContent = {
             FlowRow {
                 selected.forEach { group ->
                     AssistChip(
                         modifier = Modifier.padding(3.dp),
-                        onClick = { /*TODO*/ },
+                        onClick = {},
                         label = { Text(group.display) })
                 }
             }
         }
-
-    }
+    )
 }
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
@@ -262,24 +257,13 @@ fun CapsPanel(
         )
     }
 
-    OutlinedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        colors = CardDefaults.cardColors().copy(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-            contentColor = MaterialTheme.colorScheme.onSurface
-        ),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable {
-                    selectCapabilitiesDialog.show()
-                }
-                .padding(16.dp)
-        ) {
-            Text(stringResource(R.string.profile_capabilities))
+    SettingsJumpPageWidget(
+        title = stringResource(R.string.profile_capabilities),
+        iconPlaceholder = false,
+        onClick = {
+            selectCapabilitiesDialog.show()
+        },
+        descriptionColumnContent = {
             FlowRow {
                 selected.forEach { group ->
                     AssistChip(
@@ -289,51 +273,50 @@ fun CapsPanel(
                 }
             }
         }
-
-    }
+    )
 }
 
 @Composable
 private fun UidPanel(uid: Int, label: String, onUidChange: (Int) -> Unit) {
-    var isError by remember {
-        mutableStateOf(false)
-    }
-    var lastValidUid by remember {
-        mutableIntStateOf(uid)
-    }
+    var lastValidText by remember { mutableStateOf(uid.toString()) }
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    OutlinedTextField(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-        label = { Text(label) },
-        value = uid.toString(),
-        isError = isError,
+    val state = rememberTextFieldState(initialText = uid.toString())
+
+    SettingsTextFieldWidget(
+        modifier = Modifier
+            .fillMaxWidth(),
+        labelColor = MaterialTheme.colorScheme.onSurface,
+        title = label,
+        state = state,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Number,
             imeAction = ImeAction.Done
         ),
-        keyboardActions = KeyboardActions(onDone = {
+        onKeyboardAction = {
             keyboardController?.hide()
-        }),
-        onValueChange = {
-            if (it.isEmpty()) {
-                onUidChange(0)
-                return@OutlinedTextField
-            }
-            val valid = isTextValidUid(it)
-
-            val targetUid = if (valid) it.toInt() else lastValidUid
-            if (valid) {
-                lastValidUid = it.toInt()
-            }
-
-            onUidChange(targetUid)
-
-            isError = !valid
-        }
+        },
     )
-}
 
+    LaunchedEffect(state.text) {
+        val currentText = state.text.toString()
+
+        if (currentText.isEmpty()) {
+            lastValidText = ""
+            onUidChange(0)
+            return@LaunchedEffect
+        }
+
+        if (isTextValidUid(currentText)) {
+            lastValidText = currentText
+            onUidChange(currentText.toInt())
+        } else {
+            state.edit {
+                replace(0, length, lastValidText)
+            }
+        }
+    }
+}
 @Composable
 fun MountNameSpacePanel(
     profile: Natives.Profile, onMntNamespaceChange: (namespaceType: Int) -> Unit
@@ -349,7 +332,7 @@ fun MountNameSpacePanel(
         })
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun SELinuxPanel(
     profile: Natives.Profile,
@@ -418,23 +401,13 @@ private fun SELinuxPanel(
         )
     }
 
-    OutlinedTextField(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .clickable {
-                editSELinuxDialog.show()
-            },
-        enabled = false,
-        colors = OutlinedTextFieldDefaults.colors(
-            disabledTextColor = MaterialTheme.colorScheme.onSurface,
-            disabledBorderColor = MaterialTheme.colorScheme.outline,
-            disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
-        ),
-        label = { Text(text = stringResource(R.string.profile_selinux_context)) },
-        value = profile.context,
-        onValueChange = { }
+    SettingsJumpPageWidget(
+        title = stringResource(R.string.profile_selinux_context),
+        iconPlaceholder = false,
+        description = profile.context,
+        onClick = {
+            editSELinuxDialog.show()
+        }
     )
 }
 
@@ -442,11 +415,15 @@ private fun SELinuxPanel(
 @Composable
 private fun RootProfileConfigPreview() {
     var profile by remember { mutableStateOf(Natives.Profile("")) }
-    RootProfileConfig(fixedName = true, profile = profile) {
+    RootProfileConfig(profile = profile) {
         profile = it
     }
 }
 
 private fun isTextValidUid(text: String): Boolean {
-    return text.isNotEmpty() && text.isDigitsOnly() && text.toInt() >= 0
+    return try {
+        text.isNotEmpty() && text.isDigitsOnly() && text.toInt() >= 0
+    } catch (_: Throwable) {
+        false
+    }
 }
