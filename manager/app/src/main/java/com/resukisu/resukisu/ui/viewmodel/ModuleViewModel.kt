@@ -1,6 +1,5 @@
 package com.resukisu.resukisu.ui.viewmodel
 
-import com.resukisu.resukisu.ksuApp
 import android.content.Context
 import android.os.SystemClock
 import android.util.Log
@@ -12,12 +11,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dergoogler.mmrl.platform.model.ModuleConfig
 import com.dergoogler.mmrl.platform.model.ModuleConfig.Companion.asModuleConfig
+import com.resukisu.resukisu.ksuApp
 import com.resukisu.resukisu.ui.util.HanziToPinyin
 import com.resukisu.resukisu.ui.util.getRootShell
 import com.resukisu.resukisu.ui.util.listModules
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import java.text.Collator
@@ -118,7 +117,9 @@ class ModuleViewModel : ViewModel() {
         isNeedRefresh = true
     }
 
-    fun fetchModuleList() {
+    fun fetchModuleList(
+        manualRefresh: Boolean = false
+    ) {
         viewModelScope.launch(Dispatchers.IO) {
             isRefreshing = true
 
@@ -156,42 +157,55 @@ class ModuleViewModel : ViewModel() {
                         )
                     }.toList()
 
-                launch {
-                    modules.forEach { module ->
-                        withContext(Dispatchers.IO) {
-                            try {
-                                runCatching {
-                                    module.config = module.id.asModuleConfig
-                                }.onFailure { e ->
-                                    Log.e(TAG, "Failed to load config from id for module ${module.id}", e)
-                                }
-                                if (module.config == null) {
-                                    runCatching {
-                                        module.config = module.name.asModuleConfig
-                                    }.onFailure { e ->
-                                        Log.e(TAG, "Failed to load config from name for module ${module.id}", e)
-                                    }
-                                }
-                                if (module.config == null) {
-                                    runCatching {
-                                        module.config = module.description.asModuleConfig
-                                    }.onFailure { e ->
-                                        Log.e(TAG, "Failed to load config from description for module ${module.id}", e)
-                                    }
-                                }
-                                if (module.config == null) {
-                                    module.config = ModuleConfig()
-                                }
-
-                            } catch (e: Exception) {
-                                Log.e(TAG, "Failed to load any config for module ${module.id}", e)
-                                module.config = ModuleConfig()
-                            }
-
-                            module.moduleUpdate = checkUpdate(module)
-                        }
+                val moduleList = mutableListOf<String>()
+                if (!manualRefresh) {
+                    oldModuleList.forEach { module ->
+                        moduleList.add(module.id + module.versionCode)
                     }
                 }
+
+                modules.forEach { module ->
+                    try {
+                        runCatching {
+                            module.config = module.id.asModuleConfig
+                        }.onFailure { e ->
+                            Log.e(TAG, "Failed to load config from id for module ${module.id}", e)
+                        }
+                        if (module.config == null) {
+                            runCatching {
+                                module.config = module.name.asModuleConfig
+                            }.onFailure { e ->
+                                Log.e(
+                                    TAG,
+                                    "Failed to load config from name for module ${module.id}",
+                                    e
+                                )
+                            }
+                        }
+                        if (module.config == null) {
+                            runCatching {
+                                module.config = module.description.asModuleConfig
+                            }.onFailure { e ->
+                                Log.e(
+                                    TAG,
+                                    "Failed to load config from description for module ${module.id}",
+                                    e
+                                )
+                            }
+                        }
+                        if (module.config == null) {
+                            module.config = ModuleConfig()
+                        }
+
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to load any config for module ${module.id}", e)
+                        module.config = ModuleConfig()
+                    }
+
+                    if (!moduleList.contains(module.id + module.versionCode))
+                        module.moduleUpdate = checkUpdate(module)
+                }
+
                 isNeedRefresh = false
             }.onFailure { e ->
                 Log.e(TAG, "fetchModuleList: ", e)
