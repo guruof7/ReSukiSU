@@ -308,10 +308,6 @@ fun ModulePage(navigator: DestinationsNavigator, bottomPadding: Dp, hazeState: H
 
     val scrollBehavior = pinnedScrollBehavior()
 
-    val webUILauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { viewModel.fetchModuleList() }
-
     Scaffold(
         topBar = {
             SearchAppBar(
@@ -460,7 +456,7 @@ fun ModulePage(navigator: DestinationsNavigator, bottomPadding: Dp, hazeState: H
                                     }
                                     else -> ksuEngine
                                 }
-                                webUILauncher.launch(selectedEngine)
+                                context.startActivity(selectedEngine)
                             } catch (e: Exception) {
                                 Log.e("ModuleScreen", "Error launching WebUI: ${e.message}", e)
                                 scope.launch {
@@ -969,7 +965,7 @@ private fun ModuleList(
     PullToRefreshBox(
         state = pullRefreshState,
         onRefresh = {
-            viewModel.fetchModuleList()
+            viewModel.fetchModuleList(true)
         },
         modifier = pullToRefreshBoxModifier.fillMaxSize(),
         indicator = {
