@@ -302,7 +302,11 @@ class MainActivity : ComponentActivity() {
 fun MainScreen(navigator: DestinationsNavigator, pageIndex: Int = 0) {
     // 页面隐藏处理
     val activity = LocalActivity.current as MainActivity
-    val pages = BottomBarDestination.getPages(activity.settingsStateFlow.collectAsState().value)
+    val settings by activity.settingsStateFlow.collectAsState()
+
+    val pages = remember(settings) {
+        BottomBarDestination.getPages(settings)
+    }
 
     if (pageIndex < 0 || pageIndex >= pages.size) throw IllegalArgumentException("pageIndex invalid, index: $pageIndex, pages size: ${pages.size}")
 
@@ -378,11 +382,15 @@ fun MainScreen(navigator: DestinationsNavigator, pageIndex: Int = 0) {
         ) { innerPadding ->
             HorizontalPager(
                 state = pagerState,
-                beyondViewportPageCount = pages.size,
+                beyondViewportPageCount = 2,
                 userScrollEnabled = userScrollEnabled,
             ) {
+                val bottomPadding = remember(innerPadding) {
+                    innerPadding.calculateBottomPadding()
+                }
+
                 val destination = pages[it]
-                destination.direction(navigator, innerPadding.calculateBottomPadding(), hazeState)
+                destination.direction(navigator, bottomPadding, hazeState)
             }
         }
     }
