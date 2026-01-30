@@ -299,7 +299,7 @@ class MainActivity : ComponentActivity() {
  */
 @Destination<RootGraph>(start = true)
 @Composable
-fun MainScreen(navigator: DestinationsNavigator, pageIndex: Int = 0) {
+fun MainScreen(navigator: DestinationsNavigator) {
     // 页面隐藏处理
     val activity = LocalActivity.current as MainActivity
     val settings by activity.settingsStateFlow.collectAsState()
@@ -308,13 +308,11 @@ fun MainScreen(navigator: DestinationsNavigator, pageIndex: Int = 0) {
         BottomBarDestination.getPages(settings)
     }
 
-    if (pageIndex < 0 || pageIndex >= pages.size) throw IllegalArgumentException("pageIndex invalid, index: $pageIndex, pages size: ${pages.size}")
-
     val coroutineScope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(initialPage = pageIndex, pageCount = { pages.size })
+    val pagerState = rememberPagerState(pageCount = { pages.size })
     var userScrollEnabled by remember { mutableStateOf(true) }
     var animating by remember { mutableStateOf(false) }
-    var uiSelectedPage by remember { mutableIntStateOf(pageIndex) }
+    var uiSelectedPage by remember { mutableIntStateOf(0) }
     var animateJob by remember { mutableStateOf<Job?>(null) }
     var lastRequestedPage by remember { mutableIntStateOf(pagerState.currentPage) }
     val hazeState = if (ThemeConfig.backgroundImageLoaded) rememberHazeState() else null
