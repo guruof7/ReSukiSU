@@ -305,9 +305,7 @@ fun ReleasesTab(
             .nestedScroll(nestedScrollConnection),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        item(
-            key = "top"
-        ) {
+        item {
             Spacer(Modifier.height(topPadding))
         }
         items(
@@ -315,7 +313,6 @@ fun ReleasesTab(
             key = { it.tagName }
         ) {
             ReleaseCard(module, it, coroutineScope, navigator)
-            Spacer(modifier = Modifier.height(5.dp))
         }
     }
 }
