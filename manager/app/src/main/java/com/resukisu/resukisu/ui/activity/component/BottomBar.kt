@@ -23,7 +23,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -61,19 +64,26 @@ fun BottomBar(destinations: List<BottomBarDestination>, hazeState: HazeState?) {
     val handlePageChange = LocalHandlePageChange.current
 
     // 收集计数数据
-    val superuserCount by produceState(initialValue = 0) {
+    var superuserCountSaved by rememberSaveable { mutableIntStateOf(0) }
+    var moduleCountSaved by rememberSaveable { mutableIntStateOf(0) }
+    var kpmModuleCountSaved by rememberSaveable { mutableIntStateOf(0) }
+
+    val superuserCount by produceState(initialValue = superuserCountSaved) {
         withContext(Dispatchers.IO) {
             value = getSuperuserCount()
+            superuserCountSaved = value
         }
     }
-    val moduleCount by produceState(initialValue = 0) {
+    val moduleCount by produceState(initialValue = moduleCountSaved) {
         withContext(Dispatchers.IO) {
             value = getModuleCount()
+            moduleCountSaved = value
         }
     }
-    val kpmModuleCount by produceState(initialValue = 0) {
+    val kpmModuleCount by produceState(initialValue = kpmModuleCountSaved) {
         withContext(Dispatchers.IO) {
             value = getKpmModuleCount()
+            kpmModuleCountSaved = value
         }
     }
 

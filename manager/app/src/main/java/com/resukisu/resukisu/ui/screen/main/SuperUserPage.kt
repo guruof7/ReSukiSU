@@ -33,7 +33,6 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -99,6 +98,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.ramcosta.composedestinations.generated.destinations.AppProfileScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -847,12 +847,12 @@ private fun AppGroupItem(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(mainApp.packageInfo)
                     .crossfade(true)
+                    .memoryCachePolicy(CachePolicy.ENABLED)
                     .build(),
                 contentDescription = mainApp.label,
                 modifier = Modifier
                     .padding(4.dp)
-                    .width(48.dp)
-                    .height(48.dp)
+                    .size(48.dp)
             )
         },
         iconPlaceholder = false,

@@ -19,6 +19,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Scaffold
@@ -32,8 +33,10 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.edit
@@ -295,7 +298,6 @@ class MainActivity : ComponentActivity() {
 
 /**
  * @param navigator 页面导航
- * @param pageIndex 初始页面索引
  */
 @Destination<RootGraph>(start = true)
 @Composable
@@ -309,10 +311,13 @@ fun MainScreen(navigator: DestinationsNavigator) {
     }
 
     val coroutineScope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(pageCount = { pages.size })
+    var uiSelectedPage by rememberSaveable { mutableIntStateOf(0) }
+    val pagerState = rememberPagerState(
+        initialPage = uiSelectedPage,
+        pageCount = { pages.size }
+    )
     var userScrollEnabled by remember { mutableStateOf(true) }
     var animating by remember { mutableStateOf(false) }
-    var uiSelectedPage by remember { mutableIntStateOf(0) }
     var animateJob by remember { mutableStateOf<Job?>(null) }
     var lastRequestedPage by remember { mutableIntStateOf(pagerState.currentPage) }
     val hazeState = if (ThemeConfig.backgroundImageLoaded) rememberHazeState() else null
@@ -373,12 +378,14 @@ fun MainScreen(navigator: DestinationsNavigator) {
         LocalSelectedPage provides uiSelectedPage
     ) {
         Scaffold(
+            modifier = Modifier.fillMaxSize(),
             bottomBar = {
                 BottomBar(pages, hazeState)
             },
             containerColor = Color.Transparent
         ) { innerPadding ->
             HorizontalPager(
+                modifier = Modifier.fillMaxSize(),
                 state = pagerState,
                 beyondViewportPageCount = 2,
                 userScrollEnabled = userScrollEnabled,
