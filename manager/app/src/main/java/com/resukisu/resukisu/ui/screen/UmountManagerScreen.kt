@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,7 +19,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
@@ -67,6 +68,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.resukisu.resukisu.R
 import com.resukisu.resukisu.ui.component.ConfirmResult
 import com.resukisu.resukisu.ui.component.rememberConfirmDialog
+import com.resukisu.resukisu.ui.component.settings.AppBackButton
 import com.resukisu.resukisu.ui.theme.ThemeConfig
 import com.resukisu.resukisu.ui.theme.getCardColors
 import com.resukisu.resukisu.ui.theme.getCardElevation
@@ -153,10 +155,13 @@ fun UmountManagerScreen(navigator: DestinationsNavigator) {
                 modifier = modifier,
                 title = { Text(stringResource(R.string.umount_path_manager)) },
                 navigationIcon = {
-                    IconButton(onClick = { navigator.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-                    }
+                    AppBackButton(
+                        onClick = {
+                            navigator.popBackStack()
+                        }
+                    )
                 },
+                windowInsets = TopAppBarDefaults.windowInsets.add(WindowInsets(left = 12.dp)),
                 scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor =
@@ -181,7 +186,9 @@ fun UmountManagerScreen(navigator: DestinationsNavigator) {
     ) { paddingValues ->
         if (isLoading) { // 初次加载时动画
             Box(
-                modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .nestedScroll(scrollBehavior.nestedScrollConnection),
                 contentAlignment = Alignment.Center,
             ) {
                 LoadingIndicator()
@@ -199,13 +206,17 @@ fun UmountManagerScreen(navigator: DestinationsNavigator) {
                     PullToRefreshDefaults.LoadingIndicator(
                         state = pullToRefreshState,
                         isRefreshing = isRefreshing,
-                        modifier = Modifier.padding(top = paddingValues.calculateTopPadding()).align(Alignment.TopCenter),
+                        modifier = Modifier
+                            .padding(top = paddingValues.calculateTopPadding())
+                            .align(Alignment.TopCenter),
                     )
                 },
                 modifier = if (hazeState != null) Modifier.hazeSource(hazeState) else Modifier
             ) {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .nestedScroll(scrollBehavior.nestedScrollConnection),
                     contentPadding = PaddingValues(
                         horizontal = SPACING_LARGE,
                         vertical = SPACING_MEDIUM
@@ -225,7 +236,9 @@ fun UmountManagerScreen(navigator: DestinationsNavigator) {
                             elevation = getCardElevation()
                         ) {
                             Row(
-                                modifier = Modifier.fillMaxWidth().padding(5.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(5.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
@@ -253,7 +266,9 @@ fun UmountManagerScreen(navigator: DestinationsNavigator) {
                                 elevation = getCardElevation()
                             ) {
                                 Row(
-                                    modifier = Modifier.fillMaxWidth().padding(5.dp),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(5.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Icon(

@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -31,7 +32,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Link
@@ -87,6 +87,7 @@ import com.resukisu.resukisu.R
 import com.resukisu.resukisu.ui.component.ConfirmResult
 import com.resukisu.resukisu.ui.component.GithubMarkdown
 import com.resukisu.resukisu.ui.component.rememberConfirmDialog
+import com.resukisu.resukisu.ui.component.settings.AppBackButton
 import com.resukisu.resukisu.ui.component.settings.SettingsBaseWidget
 import com.resukisu.resukisu.ui.component.settings.SplicedColumnGroup
 import com.resukisu.resukisu.ui.theme.CardConfig
@@ -154,14 +155,11 @@ fun OnlineModuleDetailScreen(navigator: DestinationsNavigator, module: ModuleRep
                     title = { Text(module.moduleName) },
                     scrollBehavior = scrollBehavior,
                     navigationIcon = {
-                        IconButton(
-                            onClick = { navigator.popBackStack() },
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(id = R.string.back),
-                            )
-                        }
+                        AppBackButton(
+                            onClick = {
+                                navigator.popBackStack()
+                            }
+                        )
                     },
                     actions = {
                         IconButton(
@@ -182,7 +180,8 @@ fun OnlineModuleDetailScreen(navigator: DestinationsNavigator, module: ModuleRep
                         scrolledContainerColor =
                             if (ThemeConfig.backgroundImageLoaded) Color.Transparent
                             else MaterialTheme.colorScheme.surfaceContainer
-                    )
+                    ),
+                    windowInsets = TopAppBarDefaults.windowInsets.add(WindowInsets(left = 12.dp)),
                 )
 
                 PrimaryTabRow(
