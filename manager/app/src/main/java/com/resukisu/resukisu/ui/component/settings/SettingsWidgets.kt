@@ -75,7 +75,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
@@ -121,7 +120,6 @@ fun SettingsBaseWidget(
     content: @Composable BoxScope.() -> Unit,
 ) {
     val haptic = LocalHapticFeedback.current
-    val alpha = if (enabled) 1f else 0.38f
 
     val interactionSource = remember { MutableInteractionSource() }
     val onClickState = rememberUpdatedState(onClick)
@@ -179,7 +177,7 @@ fun SettingsBaseWidget(
                     .align(Alignment.CenterVertically),
                 imageVector = icon,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = alpha)
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         if (icon == null && iconPlaceholder)
             Spacer(modifier = Modifier.size(24.dp))
@@ -191,7 +189,7 @@ fun SettingsBaseWidget(
             Column {
                 Text(
                     text = title,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = alpha),
+                    color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.titleMediumEmphasized,
                     fontSize = MaterialTheme.typography.titleMediumEmphasized.fontSize,
                     fontWeight = FontWeight.SemiBold,
@@ -203,7 +201,7 @@ fun SettingsBaseWidget(
                     else descriptionColor
                     Text(
                         text = it,
-                        color = color.copy(alpha = alpha),
+                        color = color,
                         style = MaterialTheme.typography.bodyMediumEmphasized,
                         fontSize = MaterialTheme.typography.bodyMediumEmphasized.fontSize,
                         fontFamily = MaterialTheme.typography.bodySmallEmphasized.fontFamily,
@@ -213,14 +211,13 @@ fun SettingsBaseWidget(
                 }
                 descriptionColumnContent()
             }
-            Box(Modifier.alpha(alpha)) {
+            Box {
                 foreContent()
             }
         }
         Box(
             modifier = Modifier
                 .align(Alignment.CenterVertically)
-                .alpha(alpha)
         ) {
             content()
         }

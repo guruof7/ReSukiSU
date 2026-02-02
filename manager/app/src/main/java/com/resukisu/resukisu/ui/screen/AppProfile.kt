@@ -50,8 +50,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -458,6 +456,7 @@ private fun AppProfileInner(
                                 modifier = Modifier.padding(vertical = 5.dp),
                                 title = app.label,
                                 description = app.packageName,
+                                enabled = false,
                                 iconPlaceholder = false,
                                 noVerticalPadding = true,
                                 rowHeader = {
@@ -520,6 +519,7 @@ private fun TopBar(
     else Modifier
 
     LargeFlexibleTopAppBar(
+        modifier = modifier,
         title = {
             Text(
                 text = title,
@@ -527,8 +527,7 @@ private fun TopBar(
         },
         subtitle = {
             Text(
-                text = packageName,
-                modifier = Modifier.alpha(0.8f)
+                text = packageName
             )
         },
         colors = colors,
@@ -539,10 +538,6 @@ private fun TopBar(
         },
         windowInsets = TopAppBarDefaults.windowInsets.add(WindowInsets(left = 12.dp)),
         scrollBehavior = scrollBehavior,
-        modifier = modifier.shadow(
-            elevation = if ((scrollBehavior?.state?.overlappedFraction ?: 0f) > 0.01f)
-                4.dp else 0.dp,
-        )
     )
 }
 
