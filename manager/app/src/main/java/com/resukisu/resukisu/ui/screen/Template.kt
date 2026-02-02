@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,7 +23,6 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ImportExport
 import androidx.compose.material.icons.filled.Sync
@@ -70,6 +70,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.result.ResultRecipient
 import com.ramcosta.composedestinations.result.getOr
 import com.resukisu.resukisu.R
+import com.resukisu.resukisu.ui.component.settings.AppBackButton
 import com.resukisu.resukisu.ui.component.settings.SettingsJumpPageWidget
 import com.resukisu.resukisu.ui.theme.CardConfig
 import com.resukisu.resukisu.ui.theme.ThemeConfig
@@ -358,9 +359,9 @@ private fun TopBar(
                 else MaterialTheme.colorScheme.surfaceContainer,
         ),
         navigationIcon = {
-            IconButton(
+            AppBackButton(
                 onClick = onBack
-            ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
+            )
         },
         actions = {
             IconButton(onClick = onSync) {
@@ -397,7 +398,7 @@ private fun TopBar(
                 }
             }
         },
-        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
+        windowInsets = TopAppBarDefaults.windowInsets.add(WindowInsets(left = 12.dp)),
         scrollBehavior = scrollBehavior
     )
 }

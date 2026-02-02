@@ -10,30 +10,29 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.twotone.ArrowBack
 import androidx.compose.material.icons.twotone.Search
 import androidx.compose.material3.AppBarWithSearch
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SearchBarScrollBehavior
 import androidx.compose.material3.SearchBarValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -62,6 +61,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.resukisu.resukisu.R
+import com.resukisu.resukisu.ui.component.settings.AppBackButton
 import com.resukisu.resukisu.ui.theme.CardConfig
 import com.resukisu.resukisu.ui.theme.ThemeConfig
 import dev.chrisbanes.haze.HazeState
@@ -310,28 +310,25 @@ fun SearchAppBar(
         },
         navigationIcon = {
             if (onBackClick != null) {
-                IconButton(onClick = {
-                    if (isExpanded) {
-                        if (textFieldState.text.isNotEmpty()) {
-                            textFieldState.edit {
-                                replace(0, length, "")
+                AppBackButton(
+                    onClick = {
+                        if (isExpanded) {
+                            if (textFieldState.text.isNotEmpty()) {
+                                textFieldState.edit {
+                                    replace(0, length, "")
+                                }
+                            } else {
+                                scope.launch {
+                                    searchBarState.animateToCollapsed()
+                                    keyboardController?.hide()
+                                    focusManager.clearFocus()
+                                }
                             }
-                        } else {
-                            scope.launch {
-                                searchBarState.animateToCollapsed()
-                                keyboardController?.hide()
-                                focusManager.clearFocus()
-                            }
+                            return@AppBackButton
                         }
-                        return@IconButton
+                        onBackClick.invoke()
                     }
-                    onBackClick.invoke()
-                }) {
-                    Icon(
-                        Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = stringResource(R.string.back)
-                    )
-                }
+                )
             } else {
                 navigationContent?.invoke()
             }
@@ -340,7 +337,7 @@ fun SearchAppBar(
             dropdownContent?.invoke()
         },
         scrollBehavior = scrollBehavior,
-        windowInsets = WindowInsets.statusBars,
+        windowInsets = TopAppBarDefaults.windowInsets.add(WindowInsets(left = 12.dp)),
         colors = SearchBarDefaults.appBarWithSearchColors(
             searchBarColors = SearchBarDefaults.colors(
                 containerColor = Color.Transparent
