@@ -3,6 +3,7 @@ package com.resukisu.resukisu.ui.viewmodel
 import android.content.Context
 import android.os.SystemClock
 import android.util.Log
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -14,6 +15,8 @@ import com.resukisu.resukisu.ui.util.HanziToPinyin
 import com.resukisu.resukisu.ui.util.getRootShell
 import com.resukisu.resukisu.ui.util.listModules
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
@@ -31,24 +34,33 @@ class ModuleViewModel : ViewModel() {
         private var modules by mutableStateOf<List<ModuleInfo>>(emptyList())
     }
 
-    fun getModuleSize(dirId: String): String {
-        return formatFileSize(try {
-            val shell = getRootShell()
-            val command = "/data/adb/ksu/bin/busybox du -sb /data/adb/modules/$dirId"
-            val result = shell.newJob().add(command).to(ArrayList(), null).exec()
+    val moduleSize = MutableStateFlow<Map<String, String>>(emptyMap())
 
-            if (result.isSuccess && result.out.isNotEmpty()) {
-                val sizeStr = result.out.firstOrNull()?.split("\t")?.firstOrNull()
-                sizeStr?.toLongOrNull() ?: 0L
-            } else {
-                0L
-            }
-        } catch (e: Exception) {
-            Log.e(com.resukisu.resukisu.ui.viewmodel.TAG, "计算模块大小失败 $dirId: ${e.message}")
-            0L
-        })
+    fun loadSize(dirId: String) = viewModelScope.launch(Dispatchers.IO) {
+        moduleSize.update {
+            it + (dirId to
+                    formatFileSize(
+                        try {
+                            val shell = getRootShell()
+                            val command =
+                                "/data/adb/ksu/bin/busybox du -sb /data/adb/modules/$dirId"
+                            val result = shell.newJob().add(command).to(ArrayList(), null).exec()
+
+                            if (result.isSuccess && result.out.isNotEmpty()) {
+                                val sizeStr = result.out.firstOrNull()?.split("\t")?.firstOrNull()
+                                sizeStr?.toLongOrNull() ?: 0L
+                            } else {
+                                0L
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "计算模块大小失败 $dirId: ${e.message}")
+                            0L
+                        }
+                    ))
+        }
     }
 
+    @Stable
     class ModuleInfo(
         val id: String,
         val name: String,

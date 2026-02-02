@@ -87,7 +87,6 @@ import com.resukisu.resukisu.ui.util.unloadKpmModule
 import com.resukisu.resukisu.ui.viewmodel.KpmViewModel
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileInputStream
@@ -308,10 +307,7 @@ fun KpmPage(bottomPadding: Dp, hazeState: HazeState?) {
     }
 
     LaunchedEffect(Unit) {
-        while(true) {
-            viewModel.fetchModuleList()
-            delay(5000)
-        }
+        viewModel.fetchModuleList()
     }
 
     val sharedPreferences = context.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)

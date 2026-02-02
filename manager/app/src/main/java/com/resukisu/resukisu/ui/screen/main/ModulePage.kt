@@ -19,7 +19,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -122,6 +121,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.core.net.toUri
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kyant.capsule.ContinuousRoundedRectangle
@@ -997,7 +997,9 @@ private fun ModuleList(
             }
 
             if (metaModuleWarningText != null) {
-                item {
+                item(
+                    key = "warning"
+                ) {
                     MetaModuleWarningCard(metaModuleWarningText!!)
                 }
             }
@@ -1032,8 +1034,12 @@ private fun ModuleList(
                 }
 
                 else -> {
-                    items(viewModel.moduleList) { module ->
+                    items(
+                        items = viewModel.moduleList,
+                        key = { "module-$it.id" }
+                    ) { module ->
                         ModuleItem(
+                            viewModel = viewModel,
                             navigator = navigator,
                             module = module,
                             updateUrl = module.moduleUpdate?.first.orEmpty(),
@@ -1302,6 +1308,7 @@ private fun ModuleList(
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun ModuleItem(
+    viewModel: ModuleViewModel,
     navigator: DestinationsNavigator,
     module: ModuleViewModel.ModuleInfo,
     updateUrl: String,
@@ -1327,10 +1334,14 @@ fun ModuleItem(
     ) {
         val textDecoration = if (!module.remove) null else TextDecoration.LineThrough
         val interactionSource = remember { MutableInteractionSource() }
-        LocalIndication.current
-        val viewModel = viewModel<ModuleViewModel>()
 
-        val sizeStr = viewModel.getModuleSize(module.dirId)
+        LaunchedEffect(module.dirId) {
+            viewModel.loadSize(module.dirId)
+        }
+
+        val sizes by viewModel.moduleSize.collectAsStateWithLifecycle()
+
+        val sizeStr = sizes[module.dirId]
 
         Column(
             modifier = Modifier
@@ -1496,7 +1507,7 @@ fun ModuleItem(
                         )
                     }
                     LabelText(
-                        label = sizeStr,
+                        label = sizeStr ?: "0 KB",
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                     )
@@ -1612,5 +1623,14 @@ fun ModuleItemPreview() {
         webUiIconPath = null,
         dirId = "dirId"
     )
-    ModuleItem(EmptyDestinationsNavigator, module, "", {}, {}, {}, {}, {})
+    ModuleItem(
+        viewModel<ModuleViewModel>(),
+        EmptyDestinationsNavigator,
+        module,
+        "",
+        {},
+        {},
+        {},
+        {},
+        {})
 }
