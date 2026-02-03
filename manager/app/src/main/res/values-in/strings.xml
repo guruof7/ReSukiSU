@@ -540,7 +540,6 @@
     <string name="unknown_signature">Tidak diketahui</string>
     <string name="multi_manager_list">Manajer Aktif</string>
     <string name="no_active_manager">Tidak ada manajer aktif</string>
-    <string name="default_signature">SukiSU</string>
     <string name="home_zygisk_implement">Implementasi Zygisk</string>
     <!-- 循环路径相关 -->
     <string name="susfs_tab_sus_loop_paths">Jalur Loop SUS</string>

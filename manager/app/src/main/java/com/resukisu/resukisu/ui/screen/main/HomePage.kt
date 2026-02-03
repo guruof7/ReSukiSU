@@ -752,7 +752,7 @@ private fun InfoCard(
             }
 
             // 活跃管理器
-            if (!isSimpleMode && systemInfo.isDynamicSignEnabled && systemInfo.managersList != null) {
+            if (!isSimpleMode && systemInfo.managersList != null) {
                 val signatureMap =
                     systemInfo.managersList.managers.groupBy { it.signatureIndex }
 
@@ -762,8 +762,8 @@ private fun InfoCard(
                         append(" ")
                         append(
                             when (signatureIndex) {
-                                0 -> "(${stringResource(R.string.default_signature)})"
-                                100 -> "(${stringResource(R.string.dynamic_managerature)})"
+                                0 -> "(${stringResource(R.string.app_name)})"
+                                255 -> "(${stringResource(R.string.dynamic_managerature)})"
                                 else -> if (signatureIndex >= 1) "(${
                                     stringResource(
                                         R.string.signature_index,

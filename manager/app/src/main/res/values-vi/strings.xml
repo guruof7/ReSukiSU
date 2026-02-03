@@ -547,7 +547,6 @@
     <string name="unknown_signature">Không xác định</string>
     <string name="multi_manager_list">Trình quản lý đang hoạt động</string>
     <string name="no_active_manager">Trình quản lý đang không hoạt động</string>
-    <string name="default_signature">SukiSU</string>
     <string name="home_zygisk_implement">Triển khai Zygisk</string>
     <string name="home_meta_module_implement">Triển khai Siêu Module</string>
     <!-- 循环路径相关 -->

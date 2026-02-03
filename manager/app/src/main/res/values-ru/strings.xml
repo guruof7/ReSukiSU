@@ -541,7 +541,6 @@
     <string name="unknown_signature">Неизвестно</string>
     <string name="multi_manager_list">Активный менеджер</string>
     <string name="no_active_manager">Нет активного менеджера</string>
-    <string name="default_signature">SukiSU</string>
     <string name="home_zygisk_implement">Реализация Zygisk</string>
     <!-- 循环路径相关 -->
     <string name="susfs_tab_sus_loop_paths">Пути цикла SUS</string>

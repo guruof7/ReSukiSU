@@ -425,13 +425,9 @@ class HomeViewModel : ViewModel() {
                 false
             }
 
-            val managersList = if (isDynamicSignEnabled) {
-                try {
-                    Natives.getManagersList()
-                } catch (_: Exception) {
-                    null
-                }
-            } else {
+            val managersList = try {
+                Natives.getManagersList()
+            } catch (_: Exception) {
                 null
             }
 
