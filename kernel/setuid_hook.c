@@ -44,12 +44,6 @@ int ksu_handle_setuid(uid_t new_uid, uid_t old_uid, uid_t euid) // (new_euid)
 #endif
     }
 
-    // if on private space, see if its possibly the manager
-    if (new_uid > PER_USER_RANGE &&
-        new_uid % PER_USER_RANGE == ksu_get_manager_uid()) {
-        ksu_set_manager_uid(new_uid);
-    }
-
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
     if (ksu_get_manager_uid() == new_uid) {
         pr_info("install fd for ksu manager(uid=%d)\n", new_uid);

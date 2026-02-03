@@ -610,6 +610,7 @@ void ksu_handle_initrc(struct file *file)
     file->f_op = &fops_proxy;
 }
 
+#ifndef CONFIG_KSU_MANUAL_HOOK_AUTO_INITRC_HOOK
 static void ksu_handle_sys_read_fd(unsigned int fd)
 {
     struct file *file = fget(fd);
@@ -620,6 +621,7 @@ static void ksu_handle_sys_read_fd(unsigned int fd)
     ksu_handle_initrc(file);
     fput(file);
 }
+#endif
 
 int ksu_handle_sys_read(unsigned int fd, char __user **buf_ptr,
                         size_t *count_ptr)
