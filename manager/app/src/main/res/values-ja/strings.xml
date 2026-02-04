@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="home">ホーム</string>
+    <string name="learn_more">詳細を見る</string>
     <string name="home_not_installed">未インストール</string>
     <string name="home_click_to_install">タップでインストール</string>
     <string name="home_working">動作中</string>
@@ -121,6 +122,8 @@
     <string name="settings_uninstall_permanent">完全にアンインストールする</string>
     <string name="settings_restore_stock_image">ストックイメージを復元</string>
     <string name="settings_uninstall_temporary_message">KernelSU を一時的にアンインストールし、次回の再起動後に元の状態に戻します。</string>
+    <string name="settings_uninstall_permanent_message">KernelSU (root とモジュール) を完全にアンインストールします。</string>
+    <string name="settings_restore_stock_image_message">工場出荷時のイメージを復元します (バックアップが存在する場合)。通常は OTA の前に使用されます。KernelSU をアンインストールする必要がある場合は、「完全にアンインストールする」を使用してください。</string>
     <string name="flashing">フラッシュ</string>
     <string name="flash_success">フラッシュが成功しました</string>
     <string name="flash_failed">フラッシュに失敗しました</string>
@@ -163,9 +166,13 @@
     <string name="home_device_model">デバイスモデル</string>
     <string name="su_not_allowed">「%s」にスーパーユーザー権限を付与することはできません</string>
     <string name="settings_disable_su">su の互換性を無効化する</string>
+    <string name="settings_disable_su_summary">su コマンドを使用してアプリが root 権限を取得する機能を無効にします (既存のルートプロセスは影響を受けません)。</string>
     <string name="settings_disable_kernel_umount">カーネルアンマウントを無効化</string>
+    <string name="settings_disable_kernel_umount_summary">KernelSU によってコントロールされるカーネルレベルなアンマウントの動作を無効化します。</string>
     <string name="settings_enable_enhanced_security">強化されたセキュリティを有効化</string>
     <string name="settings_enable_enhanced_security_summary">より厳格なセキュリティポリシーを有効化</string>
+    <string name="feature_status_unsupported_summary">カーネルはこの機能に対応していません</string>
+    <string name="feature_status_managed_summary">この機能はモジュールによって管理されています</string>
     <string name="settings_mode_default">デフォルト</string>
     <string name="settings_mode_temp_enable">一時的に有効化</string>
     <string name="settings_mode_always_enable">恒久的に有効化</string>
@@ -185,6 +192,7 @@
     <string name="hide_zygisk_implement">Zygisk のステータスを非表示</string>
     <string name="hide_zygisk_implement_summary">ホームページ上の Zygisk 実装情報を非表示にします。</string>
     <string name="hide_meta_module_implement">メタモジュールステータスを非表示</string>
+    <string name="hide_meta_module_implement_summary">ホームページ上のメタモジュールの実装情報を非表示にします。</string>
     <string name="hide_link_card">リンクカードのステータスを非表示</string>
     <string name="hide_link_card_summary">ホームページ上のリンクカード情報を非表示にします。</string>
     <string name="hide_tag_card">モジュールラベルの行を非表示</string>
@@ -327,6 +335,7 @@
     <string name="module_download_error">モデルのダウンロードに失敗しました</string>
     <string name="kernel_flashing">カーネルをフラッシュ中</string>
     <string name="warning_of_meta_module_title">メタモジュールが必要です</string>
+    <string name="warning_of_meta_module_summary">このモジュールは /system をマウントしようとしますが、メタモジュールがそれを処理します。そうでなければ動作しない可能性があります。</string>
     <!-- 分类相关 -->
     <string name="category_all_apps">すべて</string>
     <string name="category_root_apps">Root</string>
@@ -514,6 +523,7 @@
     <string name="hide_bl_script">ロック状態</string>
     <string name="hide_bl_script_description">late_start サービスモードでブートローダーのロック状態属性を上書きする</string>
     <string name="cleanup_residue">残骸をクリーンアップ</string>
+    <string name="cleanup_residue_description">様々なモジュールやツールの残骸なファイルとディレクトリを削除します (誤って削除するとデータの消失や起動失敗につながる可能性があるため、注意して使用してください)。</string>
     <string name="susfs_edit_sus_path">SUS のパスを編集</string>
     <string name="edit_kstat_statically_title">Kstat 静的構成を編集</string>
     <string name="edit_kstat_path_title">Kstat のパスを編集</string>
@@ -624,6 +634,7 @@
     <string name="uid_scanner_setting_failed">設定に失敗、権限を確認してください</string>
     <string name="clean_runtime_environment">ランタイム環境を消去</string>
     <string name="clean_runtime_environment_summary">ランタイムファイルを消去し、スキャナーサービスを停止します</string>
+    <string name="clean_runtime_environment_confirm">ランタイム環境をクリーンアップしてもよろしいですか？これによりスキャナサービスが停止し、関連ファイルが削除されます。</string>
     <string name="clean_runtime_environment_success">ランタイム環境の消去に成功しました</string>
     <string name="clean_runtime_environment_failed">ランタイム環境の消去に失敗しました</string>
     <!-- 确认安装相关字符串 -->
@@ -661,6 +672,7 @@
     <string name="log_viewer_filter_type">タイプで絞り込み</string>
     <string name="log_viewer_all_types">すべてのタイプ</string>
     <string name="log_viewer_no_logs">ログが見つかりません</string>
+    <string name="log_viewer_no_matching_logs">一致するログがありません</string>
     <string name="log_viewer_refresh">更新</string>
     <string name="log_viewer_raw_log">生のログ</string>
     <string name="log_viewer_search_placeholder">UID、コマンドまたは詳細で検索…</string>
@@ -671,7 +683,7 @@
     <string name="log_viewer_exclude_current_app">現在のアプリ</string>
     <string name="log_viewer_page_info">ページ: %1$d/%2$d | ログの合計: %3$d</string>
     <string name="log_viewer_load_more">さらにログを読み込む</string>
-    <!-- MiUI Uninstall Desc -->
+    <string name="log_viewer_all_logs_loaded">すべてのログを表示</string>
     <string name="umount_path_manager">アンマウントパスの管理</string>
     <string name="umount_path_manager_summary">カーネルアンマウントパスの管理</string>
     <string name="add_umount_path">アンマウントパスを追加</string>
@@ -680,8 +692,11 @@
     <string name="umount_flags_hint">0=通常のアンマウント、2=MNT_DETACH</string>
     <string name="flags">フラグ</string>
     <string name="confirm_delete">構成を削除</string>
+    <string name="umount_path_added">パスを追加しました。再起動後に適用されます。</string>
+    <string name="umount_path_removed">パスを削除しました。再起動後に適用されます。</string>
     <string name="operation_failed">操作が失敗しました</string>
     <string name="confirm_action">アクションを確認</string>
+    <string name="confirm_clear_custom_paths">すべてのカスタムパスを消去してもよろしいですか？ (デフォルトのパスは保持されます)</string>
     <string name="custom_paths_cleared">カスタムパスを消去しました</string>
     <string name="clear_custom_paths">カスタムパスを消去</string>
     <string name="apply_config">構成を適用</string>
