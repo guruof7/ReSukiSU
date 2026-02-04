@@ -1,6 +1,5 @@
 use std::{
-    fs::{self, OpenOptions},
-    io::Write,
+    fs::{self},
     path::Path,
 };
 
@@ -64,12 +63,8 @@ pub fn set(size: u32, hash: [u8; 64]) -> Result<()> {
     json_raw.set_hash_from_bytes(hash);
 
     let string = serde_json::to_string_pretty(&json_raw)?;
-    let mut file = OpenOptions::new()
-        .write(true)
-        .create_new(true)
-        .open(defs::DYNAMIC_MANAGER)?;
 
-    file.write_all(string.as_bytes())?;
+    fs::write(defs::DYNAMIC_MANAGER, string)?;
 
     ksucalls::dynamic_manager_set(size, hash)?;
     Ok(())
